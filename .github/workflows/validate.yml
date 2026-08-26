@@ -54,4 +54,4 @@ jobs:
         run: bash resources/scripts/validate-library.sh
 
       - name: Compile Groovy syntax
-        run: docker run --rm --volume "$PWD:/workspace" --workdir /workspace groovy:4.0.27-jdk21 groovyc --destination /tmp/classes vars/*.groovy
+        run: docker run --rm --volume "$PWD:/workspace" --workdir /workspace groovy:4.0.27-jdk21 groovyc -d /tmp/classes vars/*.groovy
