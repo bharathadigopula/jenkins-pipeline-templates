@@ -1,0 +1,21 @@
+//==============================================================================
+// JENKINS DEPLOYMENT PIPELINE EXAMPLE
+//==============================================================================
+
+//==============================================================================
+// VERSIONED SHARED LIBRARY
+//==============================================================================
+
+@Library('jenkins-pipeline-templates@v1.0.0') _
+
+//==============================================================================
+// JENKINS CONTROLLER DEPLOYMENT
+//==============================================================================
+
+jenkinsDeploymentPipeline(
+    action: 'dry-run',
+    credentialId: 'oci-deployment-credentials',
+    scriptPath: 'scripts/deploy-jenkins.sh',
+    targetsJson: '[{"name":"controller","instance_id":"ocid1.instance.example","arguments":[]}]',
+    vaultSecretName: 'jenkins-controller-secret'
+)

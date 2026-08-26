@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+#==============================================================================
+# JENKINS SHARED LIBRARY VALIDATION
+#==============================================================================
+
+#==============================================================================
+# SHELL SAFETY
+#==============================================================================
+
+set -euo pipefail
+
+#==============================================================================
+# REPOSITORY PATHS
+#==============================================================================
+
+repository_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+
+#==============================================================================
+# REQUIRED LIBRARY FILES
+#==============================================================================
+
+required_files=(
+  vars/libraryScript.groovy
+  vars/terraformPipeline.groovy
+  vars/shellPipeline.groovy
+  vars/composePipeline.groovy
+  vars/ociRunCommand.groovy
+  vars/hostDeploymentPipeline.groovy
+  vars/monitoringDeploymentPipeline.groovy
+  vars/jenkinsDeploymentPipeline.groovy
+  vars/releasePipeline.groovy
+  vars/backupPipeline.groovy
+  vars/githubStatus.groovy
+  resources/scripts/tool-container.sh
+  resources/scripts/terraform.sh
+  resources/scripts/shell-validate.sh
+  resources/scripts/compose.sh
+  resources/scripts/oci-run-command.sh
+  resources/scripts/release.sh
+  resources/scripts/github-status.sh
+)
+
+for required_file in "${required_files[@]}"; do
+  if [[ ! -f "$repository_root/$required_file" ]]; then
+    printf 'Missing required library file: %s\n' "$required_file" >&2
+    exit 1
+  fi
+done
+
+#==============================================================================
+# BLOCK COMMENT VALIDATION
+#==============================================================================
+
+while IFS= read -r source_file; do
+  if ! grep -Fq '==============================================================================' "$source_file"; then
+    printf 'Missing block section comment: %s\n' "$source_file" >&2
+    exit 1
+  fi
+done < <(find "$repository_root/vars" "$repository_root/resources" -type f -print)
+
+#==============================================================================
+# MUTATION GUARD VALIDATION
+#==============================================================================
+
+grep -Fq 'TERRAFORM_APPROVED_PLAN_SHA256' "$repository_root/resources/scripts/terraform.sh"
+grep -Fq 'DEPLOY_SCRIPT is required' "$repository_root/resources/scripts/compose.sh"
+grep -Fq 'OCI_RUN_COMMAND_ACTION' "$repository_root/resources/scripts/oci-run-command.sh"
+
+#==============================================================================
+# VALIDATION RESULT
+#==============================================================================
+
+printf 'jenkins_library_validation=ready\n'

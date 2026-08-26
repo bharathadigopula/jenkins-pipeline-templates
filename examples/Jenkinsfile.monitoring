@@ -1,0 +1,21 @@
+//==============================================================================
+// MONITORING DEPLOYMENT PIPELINE EXAMPLE
+//==============================================================================
+
+//==============================================================================
+// VERSIONED SHARED LIBRARY
+//==============================================================================
+
+@Library('jenkins-pipeline-templates@v1.0.0') _
+
+//==============================================================================
+// MONITORING DEPLOYMENT
+//==============================================================================
+
+monitoringDeploymentPipeline(
+    action: 'dry-run',
+    credentialId: 'oci-deployment-credentials',
+    scriptPath: 'scripts/deploy-monitoring.sh',
+    targetsJson: '[{"name":"monitoring","instance_id":"ocid1.instance.example","arguments":[]}]',
+    vaultSecretName: 'monitoring-admin-secret'
+)
