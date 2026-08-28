@@ -27,6 +27,7 @@ required_files=(
   vars/composePipeline.groovy
   vars/ociRunCommand.groovy
   vars/hostDeploymentPipeline.groovy
+  vars/hostConfigDeploymentPipeline.groovy
   vars/monitoringDeploymentPipeline.groovy
   vars/jenkinsDeploymentPipeline.groovy
   vars/releasePipeline.groovy
@@ -66,6 +67,12 @@ done < <(find "$repository_root/vars" "$repository_root/resources" -type f -prin
 grep -Fq 'TERRAFORM_APPROVED_PLAN_SHA256' "$repository_root/resources/scripts/terraform.sh"
 grep -Fq 'DEPLOY_SCRIPT is required' "$repository_root/resources/scripts/compose.sh"
 grep -Fq 'OCI_RUN_COMMAND_ACTION' "$repository_root/resources/scripts/oci-run-command.sh"
+grep -Fq 'instance-principal' "$repository_root/vars/ociRunCommand.groovy"
+grep -Fq 'RUN_COMMAND_ADDITIONAL_VAULT_SECRET_NAME' "$repository_root/resources/scripts/oci-run-command.sh"
+grep -Fq 'RUN_COMMAND_TERTIARY_VAULT_SECRET_NAME' "$repository_root/resources/scripts/oci-run-command.sh"
+grep -Fq 'scripts/prepare-tool-inputs.sh' "$repository_root/vars/hostConfigDeploymentPipeline.groovy"
+
+bash "$repository_root/tests/test-oci-run-command.sh"
 
 #==============================================================================
 # VALIDATION RESULT

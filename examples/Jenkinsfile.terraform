@@ -6,7 +6,7 @@
 // VERSIONED SHARED LIBRARY
 //==============================================================================
 
-@Library('jenkins-pipeline-templates@v1.0.0') _
+@Library('jenkins-pipeline-templates@v1.1.0') _
 
 //==============================================================================
 // TERRAFORM PIPELINE

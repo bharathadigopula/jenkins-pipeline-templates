@@ -21,7 +21,7 @@ LIBRARY REQUIREMENTS
 - `bash`, `curl`, `git`, `jq`, and `sha256sum` in the controller or agent image
 - A named Docker volume containing `JENKINS_HOME`
 - A GitHub secret-text credential for status and release operations
-- An OCI secret-file credential for OCI Run Command
+- An OCI instance principal with scoped IAM permissions, or an OCI secret-file credential for OCI Run Command
 
 The tool runner uses `--volumes-from` with the Jenkins container ID so pinned Terraform, ShellCheck, and Python tool containers can access the same workspace without host-path assumptions.
 
@@ -38,12 +38,12 @@ Configure a Global Pipeline Library with:
 | Setting | Value |
 | --- | --- |
 | Name | `jenkins-pipeline-templates` |
-| Default version | An immutable release such as `v1.0.0` |
+| Default version | An immutable release such as `v1.1.0` |
 | Retrieval | Modern SCM |
 | Source | This repository's Git URL |
 | Credentials | GitHub credential when required |
 
-Consumers should pin the library in each Jenkinsfile with `@Library('jenkins-pipeline-templates@v1.0.0') _`.
+Consumers should pin the library in each Jenkinsfile with `@Library('jenkins-pipeline-templates@v1.1.0') _`.
 
 <!--
 ==============================================================================
@@ -60,6 +60,7 @@ PUBLIC PIPELINE STEPS
 | `composePipeline` | Validate, dry-run, approve, and invoke a deployment script |
 | `ociRunCommand` | Execute a versioned host script through OCI Run Command |
 | `hostDeploymentPipeline` | Validate, dry-run, approve, and deploy host automation |
+| `hostConfigDeploymentPipeline` | Resolve private host configuration, check out immutable automation, approve mutations, and verify public ingress |
 | `monitoringDeploymentPipeline` | Low-resource monitoring deployment defaults |
 | `jenkinsDeploymentPipeline` | Jenkins controller deployment defaults |
 | `releasePipeline` | Validate and create an immutable GitHub release |
@@ -86,7 +87,7 @@ OCI CREDENTIAL CONTRACT
 
 ## OCI Credential File
 
-Store one secret-file credential containing this JSON structure:
+API-key authentication remains supported for external recovery executors. Store one secret-file credential containing this JSON structure:
 
 ```json
 {
@@ -101,6 +102,8 @@ Store one secret-file credential containing this JSON structure:
 
 The OCI resource validates this structure, installs OCI CLI `3.91.0` in a pinned `python:3.11.13-slim` execution container, writes a temporary root-only OCI configuration, and never prints the private key or optional Vault secret.
 
+Production Jenkins jobs use `authenticationMode: 'instance-principal'` instead. They require `compartmentOcid` and `region`, add `--auth instance_principal` to every OCI request, and do not store a long-lived OCI API key in Jenkins. IAM must restrict Run Command dispatch to the Jenkins controller instance.
+
 <!--
 ==============================================================================
 OCI RUN COMMAND CONTRACT
@@ -109,7 +112,7 @@ OCI RUN COMMAND CONTRACT
 
 ## OCI Run Command
 
-Targets use a JSON array with `name`, `instance_id`, and `arguments`. The selected lifecycle action is prepended automatically. When `RUN_COMMAND_VAULT_SECRET_NAME` is set, exactly one active current Vault secret is loaded and appended as the final protected argument.
+Targets use a JSON array with `name`, `instance_id`, and `arguments`. The selected lifecycle action is prepended automatically. Up to three active Vault secrets can be loaded and appended in primary, additional, then tertiary order. Secret values are never printed.
 
 The fully rendered command must remain at or below OCI's 4,096-byte inline payload limit. Each target is monitored until success, failure, cancellation, or timeout, and an optional output marker must be present before the target is accepted.
 
@@ -123,7 +126,9 @@ DRY RUN AND MUTATION
 
 Validation is the default action. Deployment pipelines run remote `validate`, then remote `dry-run`, then require Jenkins approval before remote `deploy`. Terraform similarly requires explicit `apply` and checksum approval. Compose deployment requires a non-empty `DEPLOY_SCRIPT`.
 
-Release creation and backups also require approval. Jenkins should not be the only path capable of rebuilding the Jenkins controller; retain an external manual emergency workflow.
+Release creation and backups also require approval. Jenkins is the primary production executor. Retain the versioned GitHub Actions workflow as an external recovery path for rebuilding Jenkins when runner capacity is available.
+
+Jenkins controller mutations run in a detached, disposable sibling tool container. This allows the repository pipeline to dispatch a controller restart without terminating the OCI operation along with the controller container. After Jenkins returns, run the non-mutating `verify` action or use read-only CLI diagnostics to confirm the OCI command result and controller readiness.
 
 <!--
 ==============================================================================
@@ -143,7 +148,7 @@ CONSUMER EXAMPLES
 
 ## Examples
 
-The `examples` directory contains Terraform, monitoring, and Jenkins controller Jenkinsfiles. Values are placeholders and contain no production domains, addresses, or cloud identifiers.
+The `examples` directory contains Terraform, monitoring, and Jenkins controller Jenkinsfiles. Private host-config repositories use `hostConfigDeploymentPipeline` so inventory, immutable automation refs, Vault secret names, and route verification remain in repository data rather than Jenkins UI configuration.
 
 <!--
 ==============================================================================
@@ -157,6 +162,7 @@ Run the non-mutating local checks:
 
 ```bash
 shellcheck resources/scripts/*.sh
+shellcheck tests/*.sh
 bash resources/scripts/validate-library.sh
 actionlint .github/workflows/validate.yml
 ```
