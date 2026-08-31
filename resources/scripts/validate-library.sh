@@ -85,6 +85,33 @@ grep -Fq 'terraformDirectories' "$repository_root/vars/repositoryValidationPipel
 grep -Fq "libraryScript('actionlint.sh')" "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "libraryScript('groovy-validate.sh')" "$repository_root/vars/repositoryValidationPipeline.groovy"
 
+#==============================================================================
+# PIPELINE EXECUTION VALIDATION
+#==============================================================================
+
+pipeline_files=(
+  backupPipeline.groovy
+  composePipeline.groovy
+  hostConfigDeploymentPipeline.groovy
+  hostConfigIngressPipeline.groovy
+  hostConfigNetworkPipeline.groovy
+  hostDeploymentPipeline.groovy
+  ociTerraformPipeline.groovy
+  releasePipeline.groovy
+  repositoryValidationPipeline.groovy
+  shellPipeline.groovy
+  terraformPipeline.groovy
+)
+
+for pipeline_file in "${pipeline_files[@]}"; do
+  if ! grep -Fq "agent { label 'platform' }" "$repository_root/vars/$pipeline_file" || \
+    ! grep -Fq "ansiColor('xterm')" "$repository_root/vars/$pipeline_file"; then
+    printf 'Pipeline must use the platform agent and ANSI console rendering: %s\n' \
+      "$pipeline_file" >&2
+    exit 1
+  fi
+done
+
 bash "$repository_root/tests/test-oci-run-command.sh"
 bash "$repository_root/tests/test-oci-terraform.sh"
 bash "$repository_root/tests/test-oci-vault-secret.sh"

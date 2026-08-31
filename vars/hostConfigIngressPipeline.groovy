@@ -6,9 +6,10 @@ def call(Map configuration = [:]) {
     def runtimeConfiguration = [:]
 
     pipeline {
-        agent any
+        agent { label 'platform' }
 
         options {
+            ansiColor('xterm')
             disableConcurrentBuilds()
             timeout(time: configuration.timeoutMinutes ?: 30, unit: 'MINUTES')
             buildDiscarder(logRotator(numToKeepStr: configuration.buildRetention ?: '20'))

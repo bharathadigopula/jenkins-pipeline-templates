@@ -40,9 +40,10 @@ def call(Map configuration = [:]) {
     //==========================================================================
 
     pipeline {
-        agent any
+        agent { label 'platform' }
 
         options {
+            ansiColor('xterm')
             disableConcurrentBuilds()
             timeout(time: configuration.timeoutMinutes ?: 40, unit: 'MINUTES')
             buildDiscarder(logRotator(numToKeepStr: configuration.buildRetention ?: '20'))
