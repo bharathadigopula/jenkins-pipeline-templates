@@ -17,8 +17,9 @@ LIBRARY REQUIREMENTS
 ## Requirements
 
 - Jenkins LTS with Pipeline, Credentials Binding, Git, and SSH Agent plugins
+- An agent labelled `platform` with one executor and Docker socket access
 - Docker CLI connected to a Docker daemon
-- `bash`, `curl`, `git`, `jq`, and `sha256sum` in the controller or agent image
+- `bash`, `curl`, `git`, `jq`, and `sha256sum` in the agent image
 - A named Docker volume containing `JENKINS_HOME`
 - A GitHub secret-text credential for status and release operations
 - An OCI instance principal with scoped IAM permissions, or an OCI secret-file credential for OCI Run Command
@@ -38,12 +39,14 @@ Configure a Global Pipeline Library with:
 | Setting | Value |
 | --- | --- |
 | Name | `jenkins-pipeline-templates` |
-| Default version | An immutable release such as `v1.1.0` |
+| Default version | `v1.3.0` |
 | Retrieval | Modern SCM |
 | Source | This repository's Git URL |
 | Credentials | GitHub credential when required |
 
-Consumers should pin the library in each Jenkinsfile with `@Library('jenkins-pipeline-templates@v1.1.0') _`.
+Consumers should pin the library in each Jenkinsfile with `@Library('jenkins-pipeline-templates@v1.3.0') _`.
+
+Every declarative pipeline runs on the `platform` label and enables the `xterm` AnsiColor map. The Jenkins controller must install the AnsiColor plugin, keep its own executor count at zero, and provide the Docker daemon only to the labelled build agent. Jenkins stage headings remain visible in Stage View, while supported command output retains terminal colours in the console.
 
 <!--
 ==============================================================================

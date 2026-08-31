@@ -10,13 +10,14 @@ def call(Map configuration = [:]) {
         // PIPELINE AGENT
         //======================================================================
 
-        agent any
+        agent { label 'platform' }
 
         //======================================================================
         // PIPELINE CONTROLS
         //======================================================================
 
         options {
+            ansiColor('xterm')
             disableConcurrentBuilds()
             timeout(time: configuration.timeoutMinutes ?: 20, unit: 'MINUTES')
             buildDiscarder(logRotator(numToKeepStr: configuration.buildRetention ?: '20'))
