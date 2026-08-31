@@ -18,6 +18,7 @@ action="${1:-validate}"
 terraform_directory="${TERRAFORM_DIRECTORY:-.}"
 plan_file="${TERRAFORM_PLAN_FILE:-tfplan}"
 terraform_image="${TERRAFORM_IMAGE:-hashicorp/terraform:1.15.9}"
+backend_config_file="${TERRAFORM_BACKEND_CONFIG_FILE:-}"
 script_directory=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 
 #==============================================================================
@@ -35,11 +36,15 @@ run_terraform() {
 case "$action" in
   validate)
     run_terraform fmt -check -recursive
-    run_terraform init -backend=false -input=false
+    run_terraform init -upgrade -backend=false -input=false
     run_terraform validate
     ;;
   plan)
-    run_terraform init -input=false
+    init_arguments=(init -input=false)
+    if [[ -n "$backend_config_file" ]]; then
+      init_arguments+=("-backend-config=$backend_config_file")
+    fi
+    run_terraform "${init_arguments[@]}"
     run_terraform plan -input=false -out="$plan_file"
     sha256sum "$terraform_directory/$plan_file" | tee "$terraform_directory/$plan_file.sha256"
     ;;

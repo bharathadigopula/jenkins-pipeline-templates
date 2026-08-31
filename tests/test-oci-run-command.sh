@@ -110,6 +110,18 @@ if ! grep -Fq "$expected_arguments" "$OCI_TEST_COMMAND"; then
   exit 1
 fi
 
+#==============================================================================
+# RAW ARGUMENT CONTRACT ASSERTION
+#==============================================================================
+
+export RUN_COMMAND_PREPEND_ACTION=false
+bash "$repository_root/resources/scripts/oci-run-command.sh" >/dev/null
+expected_raw_arguments="set -- 'repository' 'v1.0.0' 'primary-value' 'additional-value' 'tertiary-value'"
+if ! grep -Fq "$expected_raw_arguments" "$OCI_TEST_COMMAND"; then
+  printf 'Run Command prepended an action to a raw argument contract.\n' >&2
+  exit 1
+fi
+
 unprotected_call=$(awk 'index($0, "--auth instance_principal") == 0 { print; exit }' "$OCI_TEST_CALLS")
 if [[ -n "$unprotected_call" ]]; then
   printf 'OCI call did not use instance-principal authentication: %s\n' "$unprotected_call" >&2

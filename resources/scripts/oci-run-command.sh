@@ -23,6 +23,7 @@ script_path="${RUN_COMMAND_SCRIPT_PATH:-}"
 targets_json="${RUN_COMMAND_TARGETS:-[]}"
 display_name="${RUN_COMMAND_DISPLAY_NAME:-jenkins-run-command}"
 detached="${RUN_COMMAND_DETACHED:-false}"
+prepend_action="${RUN_COMMAND_PREPEND_ACTION:-true}"
 required_output_marker="${RUN_COMMAND_REQUIRED_OUTPUT_MARKER:-}"
 timeout_seconds="${RUN_COMMAND_TIMEOUT_SECONDS:-300}"
 vault_secret_name="${RUN_COMMAND_VAULT_SECRET_NAME:-}"
@@ -115,6 +116,11 @@ if [[ "$detached" != "true" && "$detached" != "false" ]]; then
   exit 1
 fi
 
+if [[ "$prepend_action" != "true" && "$prepend_action" != "false" ]]; then
+  printf 'RUN_COMMAND_PREPEND_ACTION must be true or false.\n' >&2
+  exit 1
+fi
+
 #==============================================================================
 # PINNED OCI CLI CONTAINER
 #==============================================================================
@@ -139,6 +145,7 @@ if [[ "${OCI_CLI_CONTAINER_READY:-false}" != "true" ]]; then
     --env OCI_RUN_COMMAND_REGION="$region" \
     --env RUN_COMMAND_DISPLAY_NAME="$display_name" \
     --env RUN_COMMAND_DETACHED=false \
+    --env RUN_COMMAND_PREPEND_ACTION="$prepend_action" \
     --env RUN_COMMAND_REQUIRED_OUTPUT_MARKER="$required_output_marker" \
     --env RUN_COMMAND_RESULTS_DIRECTORY="$results_directory" \
     --env RUN_COMMAND_SCRIPT_PATH="$script_path" \
@@ -250,7 +257,11 @@ overall_exit_code=0
 while IFS= read -r target; do
   target_name=$(jq -r '.name' <<< "$target")
   instance_id=$(jq -r '.instance_id' <<< "$target")
-  arguments=$(jq -c --arg action "$action" '[$action] + .arguments' <<< "$target")
+  if [[ "$prepend_action" == "true" ]]; then
+    arguments=$(jq -c --arg action "$action" '[$action] + .arguments' <<< "$target")
+  else
+    arguments=$(jq -c '.arguments' <<< "$target")
+  fi
 
   for secret_argument in "${secret_arguments[@]}"; do
     arguments=$(jq -c --arg secret_argument "$secret_argument" '. + [$secret_argument]' <<< "$arguments")
