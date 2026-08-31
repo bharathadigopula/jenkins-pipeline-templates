@@ -35,6 +35,7 @@ def call(Map configuration = [:]) {
             "RUN_COMMAND_TARGETS=${configuration.targetsJson ?: '[]'}",
             "RUN_COMMAND_DISPLAY_NAME=${configuration.displayName ?: 'jenkins-run-command'}",
             "RUN_COMMAND_DETACHED=${configuration.detached ?: false}",
+            "RUN_COMMAND_PREPEND_ACTION=${configuration.prependAction != false}",
             "RUN_COMMAND_REQUIRED_OUTPUT_MARKER=${configuration.requiredOutputMarker ?: ''}",
             "RUN_COMMAND_TIMEOUT_SECONDS=${configuration.timeoutSeconds ?: 300}",
             "RUN_COMMAND_VAULT_SECRET_NAME=${configuration.vaultSecretName ?: ''}",
