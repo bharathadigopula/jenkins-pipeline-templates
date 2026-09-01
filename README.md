@@ -39,12 +39,12 @@ Configure a Global Pipeline Library with:
 | Setting | Value |
 | --- | --- |
 | Name | `jenkins-pipeline-templates` |
-| Default version | `v1.3.0` |
+| Default version | `v1.4.0` |
 | Retrieval | Modern SCM |
 | Source | This repository's Git URL |
 | Credentials | GitHub credential when required |
 
-Consumers should pin the library in each Jenkinsfile with `@Library('jenkins-pipeline-templates@v1.3.0') _`.
+Consumers should pin the library in each Jenkinsfile with `@Library('jenkins-pipeline-templates@v1.4.0') _`.
 
 Every declarative pipeline runs on the `platform` label and enables the `xterm` AnsiColor map. The Jenkins controller must install the AnsiColor plugin, keep its own executor count at zero, and provide the Docker daemon only to the labelled build agent. Jenkins stage headings remain visible in Stage View, while supported command output retains terminal colours in the console.
 
@@ -170,7 +170,7 @@ bash resources/scripts/validate-library.sh
 actionlint .github/workflows/validate.yml
 ```
 
-CI also compiles every Groovy entrypoint with pinned `groovy:4.0.27-jdk21`.
+Jenkins publishes the required `continuous-integration/jenkins` check. The retained GitHub Actions validation workflow runs on pull requests, `main`, or manual dispatch. Both validators compile every Groovy entrypoint with pinned `groovy:4.0.27-jdk21`.
 
 <!--
 ==============================================================================
