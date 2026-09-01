@@ -1,0 +1,57 @@
+#==============================================================================
+# JENKINS SHARED LIBRARY VALIDATION
+#==============================================================================
+
+#==============================================================================
+# WORKFLOW IDENTITY
+#==============================================================================
+
+name: Validate Jenkins pipeline templates
+
+#==============================================================================
+# WORKFLOW TRIGGERS
+#==============================================================================
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+#==============================================================================
+# WORKFLOW PERMISSIONS
+#==============================================================================
+
+permissions:
+  contents: read
+
+#==============================================================================
+# WORKFLOW CONCURRENCY
+#==============================================================================
+
+concurrency:
+  group: jenkins-library-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+#==============================================================================
+# VALIDATION JOB
+#==============================================================================
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Validate Bash
+        run: shellcheck resources/scripts/*.sh
+
+      - name: Validate library contracts
+        run: bash resources/scripts/validate-library.sh
+
+      - name: Compile Groovy syntax
+        run: docker run --rm --volume "$PWD:/workspace" --workdir /workspace groovy:4.0.27-jdk21 groovyc -d /tmp/classes vars/*.groovy
