@@ -82,6 +82,7 @@ grep -Fq 'scripts/prepare-tool-inputs.sh' "$repository_root/vars/hostConfigDeplo
 grep -Fq 'VALIDATION_SCRIPT' "$repository_root/vars/shellPipeline.groovy"
 grep -Fq 'Repository Validation' "$repository_root/vars/shellPipeline.groovy"
 grep -Fq 'terraformDirectories' "$repository_root/vars/repositoryValidationPipeline.groovy"
+grep -Fq 'validationCommands' "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq 'githubRepository' "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "libraryScript('actionlint.sh')" "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "libraryScript('groovy-validate.sh')" "$repository_root/vars/repositoryValidationPipeline.groovy"

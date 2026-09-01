@@ -4,6 +4,7 @@
 
 def call(Map configuration = [:]) {
     def terraformDirectories = configuration.terraformDirectories ?: []
+    def validationCommands = configuration.validationCommands ?: []
 
     pipeline {
         //======================================================================
@@ -105,6 +106,19 @@ def call(Map configuration = [:]) {
                 }
                 steps {
                     sh 'bash "$VALIDATION_SCRIPT"'
+                }
+            }
+
+            stage('Additional Validation') {
+                when {
+                    expression { !validationCommands.isEmpty() }
+                }
+                steps {
+                    script {
+                        validationCommands.each { validationCommand ->
+                            sh validationCommand
+                        }
+                    }
                 }
             }
         }
