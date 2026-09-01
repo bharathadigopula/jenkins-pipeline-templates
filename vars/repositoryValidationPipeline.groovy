@@ -44,6 +44,19 @@ def call(Map configuration = [:]) {
                 }
             }
 
+            stage('Commit Status') {
+                when {
+                    expression { configuration.githubRepository }
+                }
+                steps {
+                    githubStatus(
+                        repository: configuration.githubRepository,
+                        state: 'pending',
+                        description: 'Jenkins validation is running'
+                    )
+                }
+            }
+
             stage('ShellCheck') {
                 when {
                     expression { env.SHELL_SEARCH_PATH?.trim() }
@@ -92,6 +105,31 @@ def call(Map configuration = [:]) {
                 }
                 steps {
                     sh 'bash "$VALIDATION_SCRIPT"'
+                }
+            }
+        }
+
+        post {
+            success {
+                script {
+                    if (configuration.githubRepository) {
+                        githubStatus(
+                            repository: configuration.githubRepository,
+                            state: 'success',
+                            description: 'Jenkins validation passed'
+                        )
+                    }
+                }
+            }
+            unsuccessful {
+                script {
+                    if (configuration.githubRepository) {
+                        githubStatus(
+                            repository: configuration.githubRepository,
+                            state: 'failure',
+                            description: 'Jenkins validation failed'
+                        )
+                    }
                 }
             }
         }
