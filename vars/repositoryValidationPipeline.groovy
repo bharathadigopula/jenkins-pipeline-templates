@@ -4,6 +4,7 @@
 
 def call(Map configuration = [:]) {
     def terraformDirectories = configuration.terraformDirectories ?: []
+    def validationCommands = configuration.validationCommands ?: []
 
     pipeline {
         //======================================================================
@@ -41,6 +42,19 @@ def call(Map configuration = [:]) {
             stage('Checkout') {
                 steps {
                     checkout scm
+                }
+            }
+
+            stage('Commit Status') {
+                when {
+                    expression { configuration.githubRepository }
+                }
+                steps {
+                    githubStatus(
+                        repository: configuration.githubRepository,
+                        state: 'pending',
+                        description: 'Jenkins validation is running'
+                    )
                 }
             }
 
@@ -92,6 +106,44 @@ def call(Map configuration = [:]) {
                 }
                 steps {
                     sh 'bash "$VALIDATION_SCRIPT"'
+                }
+            }
+
+            stage('Additional Validation') {
+                when {
+                    expression { !validationCommands.isEmpty() }
+                }
+                steps {
+                    script {
+                        validationCommands.each { validationCommand ->
+                            sh validationCommand
+                        }
+                    }
+                }
+            }
+        }
+
+        post {
+            success {
+                script {
+                    if (configuration.githubRepository) {
+                        githubStatus(
+                            repository: configuration.githubRepository,
+                            state: 'success',
+                            description: 'Jenkins validation passed'
+                        )
+                    }
+                }
+            }
+            unsuccessful {
+                script {
+                    if (configuration.githubRepository) {
+                        githubStatus(
+                            repository: configuration.githubRepository,
+                            state: 'failure',
+                            description: 'Jenkins validation failed'
+                        )
+                    }
                 }
             }
         }

@@ -2,9 +2,10 @@
 // JENKINS PIPELINE TEMPLATE VALIDATION
 //==============================================================================
 
-@Library('jenkins-pipeline-templates@v1.2.0') _
+@Library('jenkins-pipeline-templates@v1.4.0') _
 
 repositoryValidationPipeline(
+    githubRepository: 'bharathadigopula/jenkins-pipeline-templates',
     groovySearchPath: 'vars',
     shellSearchPath: '.',
     validationScript: 'resources/scripts/validate-library.sh',
