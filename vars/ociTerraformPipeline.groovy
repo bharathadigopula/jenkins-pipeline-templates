@@ -70,7 +70,7 @@ def call(Map configuration = [:]) {
                 }
                 steps {
                     script {
-                        def credentialFile = "${pwd(tmp: true)}/terraform-credentials.json"
+                        def credentialFile = "${pwd()}/.terraform-credentials.json"
                         try {
                             withEnv([
                                 "OCI_VAULT_SECRET_NAME=${configuration.vaultSecretName ?: ''}",
@@ -111,7 +111,7 @@ def call(Map configuration = [:]) {
                 }
                 steps {
                     script {
-                        def credentialFile = "${pwd(tmp: true)}/terraform-credentials.json"
+                        def credentialFile = "${pwd()}/.terraform-credentials.json"
                         try {
                             withEnv([
                                 "OCI_VAULT_SECRET_NAME=${configuration.vaultSecretName ?: ''}",
