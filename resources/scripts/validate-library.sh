@@ -89,6 +89,12 @@ grep -Fq "libraryScript('groovy-validate.sh')" "$repository_root/vars/repository
 grep -Fq "state: 'pending'" "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "state: 'success'" "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "state: 'failure'" "$repository_root/vars/repositoryValidationPipeline.groovy"
+grep -Fq "def credentialFile = \"\${pwd()}/.terraform-credentials.json\"" \
+  "$repository_root/vars/ociTerraformPipeline.groovy"
+if grep -Fq 'pwd(tmp: true)' "$repository_root/vars/ociTerraformPipeline.groovy"; then
+  printf 'OCI Terraform credentials must use the shared Jenkins workspace.\n' >&2
+  exit 1
+fi
 
 #==============================================================================
 # PIPELINE EXECUTION VALIDATION
