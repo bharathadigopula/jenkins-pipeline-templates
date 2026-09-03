@@ -23,6 +23,7 @@ def call(Map configuration = [:]) {
     def configurationForAction = { String selectedAction ->
         def actionConfiguration = runtimeConfiguration + [
             action: selectedAction,
+            prependAction: false,
             requiredOutputMarker: "${toolType}_${selectedAction.replace('-', '_')}=ready"
         ]
 
