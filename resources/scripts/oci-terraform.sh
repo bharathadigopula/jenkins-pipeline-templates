@@ -41,7 +41,9 @@ if ! jq -e '
   (.cloudflare_account_id | type == "string" and length == 32) and
   (.cloudflare_api_token | type == "string" and length > 0) and
   (.github_token | type == "string" and length >= 20) and
-  (.monitoring_smtp_app_password | type == "string" and length == 16)
+  (.monitoring_smtp_app_password | type == "string" and length == 16) and
+  ((has("backstage_secret_bundle") | not) or .backstage_secret_bundle == null or
+    (.backstage_secret_bundle | type == "string" and (fromjson | type == "object")))
 ' "$TERRAFORM_CREDENTIAL_FILE" >/dev/null; then
   printf 'Terraform credential bundle is invalid.\n' >&2
   exit 1
@@ -79,6 +81,11 @@ export TF_VAR_oci_user_ocid
 export TF_VAR_ssh_allowed_cidr
 export TF_VAR_ssh_public_key
 export TF_VAR_tenancy_ocid
+
+if jq -e '.backstage_secret_bundle | type == "string"' "$TERRAFORM_CREDENTIAL_FILE" >/dev/null; then
+  export TF_VAR_backstage_secret_bundle
+  TF_VAR_backstage_secret_bundle=$(jq -r '.backstage_secret_bundle' "$TERRAFORM_CREDENTIAL_FILE")
+fi
 
 CLOUDFLARE_API_TOKEN=$(jq -r '.cloudflare_api_token' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_budget_alert_recipients=$(jq -r '.budget_alert_recipients' "$TERRAFORM_CREDENTIAL_FILE")

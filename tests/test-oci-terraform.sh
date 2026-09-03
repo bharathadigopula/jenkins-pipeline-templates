@@ -30,6 +30,7 @@ set -euo pipefail
 printf '%s\n' "$*" >> "$OCI_TERRAFORM_TEST_CALLS"
 if [[ "$*" == *' plan '* ]]; then
   cp "$OCI_CONFIG_FILE" "$OCI_TERRAFORM_TEST_CONFIG"
+  printf '%s' "$TF_VAR_backstage_secret_bundle" > "$OCI_TERRAFORM_TEST_BACKSTAGE_SECRET"
   printf 'saved-plan\n' > "$TERRAFORM_DIRECTORY/$TERRAFORM_PLAN_FILE"
 fi
 EOF
@@ -41,11 +42,13 @@ chmod +x "$temporary_directory/bin/docker"
 
 export HOSTNAME=jenkins-controller
 export OCI_TERRAFORM_TEST_CALLS="$temporary_directory/docker-calls"
+export OCI_TERRAFORM_TEST_BACKSTAGE_SECRET="$temporary_directory/backstage-secret"
 export OCI_TERRAFORM_TEST_CONFIG="$temporary_directory/oci-config"
 export PATH="$temporary_directory/bin:$PATH"
 export TERRAFORM_BACKEND_CONFIG_FILE=backend.hcl.example
 cat > "$temporary_directory/terraform-credentials.json" <<'EOF'
 {
+  "backstage_secret_bundle":"{\"backend_secret\":\"backend\"}",
   "tenancy_ocid":"ocid1.tenancy.oc1..test",
   "user_ocid":"ocid1.user.oc1..test",
   "fingerprint":"aa:bb:cc",
@@ -74,6 +77,7 @@ bash "$repository_root/resources/scripts/oci-terraform.sh" plan >/dev/null
 grep -Fq -- '-backend-config=backend.hcl.example' "$OCI_TERRAFORM_TEST_CALLS"
 grep -Fq 'tenancy=ocid1.tenancy.oc1..test' "$OCI_TERRAFORM_TEST_CONFIG"
 grep -Fq 'user=ocid1.user.oc1..test' "$OCI_TERRAFORM_TEST_CONFIG"
+test "$(cat "$OCI_TERRAFORM_TEST_BACKSTAGE_SECRET")" = '{"backend_secret":"backend"}'
 
 if find "$temporary_directory/workspace" -maxdepth 1 -type d -name '.jenkins-oci.*' | grep -q .; then
   printf 'Temporary OCI credentials were not removed.\n' >&2
