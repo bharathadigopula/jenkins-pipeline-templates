@@ -20,6 +20,30 @@ trap 'rm -rf "$temporary_directory"' EXIT
 install -d "$temporary_directory/bin"
 
 #==============================================================================
+# DOCKER TEST DOUBLE
+#==============================================================================
+
+cat > "$temporary_directory/bin/docker" <<'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+printf '%s\n' "$*" > "$OCI_VAULT_DOCKER_CALL"
+EOF
+chmod +x "$temporary_directory/bin/docker"
+
+export HOSTNAME=jenkins-agent
+export OCI_VAULT_COMPARTMENT_OCID=ocid1.compartment.oc1..test
+export OCI_VAULT_DOCKER_CALL="$temporary_directory/docker-call"
+export OCI_VAULT_REGION=ap-hyderabad-1
+export OCI_VAULT_SECRET_NAME=bharathcloudops-prd-hyd-terraform-credentials
+export PATH="$temporary_directory/bin:$PATH"
+export TERRAFORM_CREDENTIAL_FILE="$temporary_directory/terraform-credentials.json"
+
+bash "$repository_root/resources/scripts/oci-vault-secret.sh"
+
+grep -Fq -- "--env OCI_VAULT_CREDENTIAL_OWNER_UID=$(id -u)" "$OCI_VAULT_DOCKER_CALL"
+grep -Fq -- "--env OCI_VAULT_CREDENTIAL_OWNER_GID=$(id -g)" "$OCI_VAULT_DOCKER_CALL"
+
+#==============================================================================
 # OCI TEST DOUBLE
 #==============================================================================
 
@@ -53,7 +77,6 @@ export OCI_VAULT_COMPARTMENT_OCID=ocid1.compartment.oc1..test
 export OCI_VAULT_REGION=ap-hyderabad-1
 export OCI_VAULT_SECRET_NAME=bharathcloudops-prd-hyd-terraform-credentials
 export OCI_VAULT_TEST_CALLS="$temporary_directory/oci-calls"
-export PATH="$temporary_directory/bin:$PATH"
 export TERRAFORM_CREDENTIAL_FILE="$temporary_directory/terraform-credentials.json"
 
 output=$(bash "$repository_root/resources/scripts/oci-vault-secret.sh")

@@ -18,6 +18,8 @@ secret_name="${OCI_VAULT_SECRET_NAME:-}"
 compartment_ocid="${OCI_VAULT_COMPARTMENT_OCID:-}"
 region="${OCI_VAULT_REGION:-}"
 credential_file="${TERRAFORM_CREDENTIAL_FILE:-}"
+credential_owner_uid="${OCI_VAULT_CREDENTIAL_OWNER_UID:-}"
+credential_owner_gid="${OCI_VAULT_CREDENTIAL_OWNER_GID:-}"
 oci_cli_version="${OCI_CLI_VERSION:-3.91.0}"
 python_image="${OCI_CLI_PYTHON_IMAGE:-python:3.11.13-slim}"
 
@@ -40,6 +42,9 @@ if [[ "${OCI_CLI_CONTAINER_READY:-false}" != "true" ]]; then
     exit 1
   fi
 
+  credential_owner_uid=$(id -u)
+  credential_owner_gid=$(id -g)
+
   exec docker run --rm \
     --volumes-from "$jenkins_container_id" \
     --workdir "$PWD" \
@@ -49,6 +54,8 @@ if [[ "${OCI_CLI_CONTAINER_READY:-false}" != "true" ]]; then
     --env OCI_VAULT_COMPARTMENT_OCID="$compartment_ocid" \
     --env OCI_VAULT_REGION="$region" \
     --env OCI_VAULT_SECRET_NAME="$secret_name" \
+    --env OCI_VAULT_CREDENTIAL_OWNER_UID="$credential_owner_uid" \
+    --env OCI_VAULT_CREDENTIAL_OWNER_GID="$credential_owner_gid" \
     --env TERRAFORM_CREDENTIAL_FILE="$credential_file" \
     "$python_image" \
     sh -c 'apt-get update >/dev/null && apt-get install --yes jq >/dev/null && python -m pip install --disable-pip-version-check --no-cache-dir "oci-cli==$OCI_CLI_VERSION" >/dev/null && bash "$1"' \
@@ -78,7 +85,15 @@ secret_id="$secret_ids"
 # SECRET CONTENT RETRIEVAL
 #==============================================================================
 
-install -m 0600 /dev/null "$credential_file"
+if [[ -n "$credential_owner_uid" || -n "$credential_owner_gid" ]]; then
+  if [[ ! "$credential_owner_uid" =~ ^[0-9]+$ ]] || [[ ! "$credential_owner_gid" =~ ^[0-9]+$ ]]; then
+    printf 'OCI Vault credential owner must use numeric UID and GID values.\n' >&2
+    exit 1
+  fi
+  install -o "$credential_owner_uid" -g "$credential_owner_gid" -m 0600 /dev/null "$credential_file"
+else
+  install -m 0600 /dev/null "$credential_file"
+fi
 oci secrets secret-bundle get \
   --auth instance_principal \
   --secret-id "$secret_id" \
