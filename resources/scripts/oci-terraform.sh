@@ -55,6 +55,7 @@ fi
 
 oci_config_directory="$credential_directory/.oci"
 install -d -m 0700 "$oci_config_directory"
+install -d -m 0700 "$credential_directory/.terraform.d"
 private_key_file="$oci_config_directory/api-key.pem"
 config_file="$oci_config_directory/config"
 jq -r '.private_key' "$TERRAFORM_CREDENTIAL_FILE" > "$private_key_file"
@@ -78,7 +79,10 @@ export OCI_CONFIG_FILE="$config_file"
 export TOOL_CONTAINER_HOME="$credential_directory"
 export TF_VAR_budget_alert_recipients
 export TF_VAR_cloudflare_account_id
+export TF_VAR_cloudflare_api_token
 export TF_VAR_jenkins_github_token
+export TF_VAR_oci_fingerprint
+export TF_VAR_oci_private_key
 export TF_VAR_monitoring_smtp_app_password
 export TF_VAR_oci_user_ocid
 export TF_VAR_ssh_allowed_cidr
@@ -93,8 +97,11 @@ fi
 CLOUDFLARE_API_TOKEN=$(jq -r '.cloudflare_api_token' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_budget_alert_recipients=$(jq -r '.budget_alert_recipients' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_cloudflare_account_id=$(jq -r '.cloudflare_account_id' "$TERRAFORM_CREDENTIAL_FILE")
+TF_VAR_cloudflare_api_token="$CLOUDFLARE_API_TOKEN"
 TF_VAR_jenkins_github_token=$(jq -r '.github_token' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_monitoring_smtp_app_password=$(jq -r '.monitoring_smtp_app_password' "$TERRAFORM_CREDENTIAL_FILE")
+TF_VAR_oci_fingerprint=$(jq -r '.fingerprint' "$TERRAFORM_CREDENTIAL_FILE")
+TF_VAR_oci_private_key=$(jq -r '.private_key' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_oci_user_ocid=$(jq -r '.user_ocid' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_ssh_allowed_cidr=$(jq -r '.ssh_allowed_cidr' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_ssh_public_key=$(jq -r '.ssh_public_key' "$TERRAFORM_CREDENTIAL_FILE")
