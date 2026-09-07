@@ -76,6 +76,10 @@ export TERRAFORM_DIRECTORY=root
 export TERRAFORM_PLAN_FILE=terraform.tfplan
 
 cd "$temporary_directory/workspace"
+install -d root/.terraform
+printf 'stale-backend\n' > root/.terraform/terraform.tfstate
+bash "$repository_root/resources/scripts/terraform.sh" validate >/dev/null
+test ! -e root/.terraform/terraform.tfstate
 bash "$repository_root/resources/scripts/oci-terraform.sh" plan >/dev/null
 
 #==============================================================================
@@ -83,6 +87,7 @@ bash "$repository_root/resources/scripts/oci-terraform.sh" plan >/dev/null
 #==============================================================================
 
 grep -Fq -- '-backend-config=backend.hcl.example' "$OCI_TERRAFORM_TEST_CALLS"
+grep -Fq -- "--user $(id -u):$(id -g)" "$OCI_TERRAFORM_TEST_CALLS"
 grep -Fq -- "--env HOME=$temporary_directory/workspace/.jenkins-oci." "$OCI_TERRAFORM_TEST_CALLS"
 grep -Fq -- '--env OCI_CONFIG_FILE' "$OCI_TERRAFORM_TEST_CALLS"
 grep -Fq 'tenancy=ocid1.tenancy.oc1..test' "$OCI_TERRAFORM_TEST_CONFIG"
