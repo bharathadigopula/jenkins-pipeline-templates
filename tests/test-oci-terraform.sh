@@ -28,6 +28,9 @@ cat > "$temporary_directory/bin/docker" <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 printf '%s\n' "$*" >> "$OCI_TERRAFORM_TEST_CALLS"
+if [[ "$*" == *'--user 0:0'* && "$*" == *'--entrypoint /bin/sh'* ]]; then
+  rm -rf -- "$TERRAFORM_DIRECTORY/.terraform"
+fi
 if [[ "$*" == *' plan '* ]]; then
   test "$OCI_CONFIG_FILE" = "$TOOL_CONTAINER_HOME/.oci/config"
   test -d "$TOOL_CONTAINER_HOME/.terraform.d"
@@ -87,6 +90,8 @@ bash "$repository_root/resources/scripts/oci-terraform.sh" plan >/dev/null
 #==============================================================================
 
 grep -Fq -- '-backend-config=backend.hcl.example' "$OCI_TERRAFORM_TEST_CALLS"
+grep -Fq -- '--user 0:0' "$OCI_TERRAFORM_TEST_CALLS"
+grep -Fq -- '--entrypoint /bin/sh' "$OCI_TERRAFORM_TEST_CALLS"
 grep -Fq -- "--user $(id -u):$(id -g)" "$OCI_TERRAFORM_TEST_CALLS"
 grep -Fq -- "--env HOME=$temporary_directory/workspace/.jenkins-oci." "$OCI_TERRAFORM_TEST_CALLS"
 grep -Fq -- '--env OCI_CONFIG_FILE' "$OCI_TERRAFORM_TEST_CALLS"

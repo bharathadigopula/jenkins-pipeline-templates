@@ -33,10 +33,14 @@ fi
 
 docker_arguments=(
   --rm
-  --user "$(id -u):$(id -g)"
+  --user "${TOOL_CONTAINER_USER:-$(id -u):$(id -g)}"
   --volumes-from "$jenkins_container_id"
   --workdir "$PWD"
 )
+
+if [[ -n "${TOOL_CONTAINER_ENTRYPOINT:-}" ]]; then
+  docker_arguments+=(--entrypoint "$TOOL_CONTAINER_ENTRYPOINT")
+fi
 
 if [[ -n "${TOOL_CONTAINER_HOME:-}" ]]; then
   docker_arguments+=(--env "HOME=$TOOL_CONTAINER_HOME")
