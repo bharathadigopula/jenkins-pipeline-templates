@@ -92,6 +92,10 @@ grep -Fq "state: 'success'" "$repository_root/vars/repositoryValidationPipeline.
 grep -Fq "state: 'failure'" "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "def credentialFile = \"\${pwd()}/.terraform-credentials.json\"" \
   "$repository_root/vars/ociTerraformPipeline.groovy"
+grep -Fq 'OCI_VAULT_CREDENTIAL_OWNER_UID' \
+  "$repository_root/resources/scripts/oci-vault-secret.sh"
+grep -Fq 'OCI_VAULT_CREDENTIAL_OWNER_GID' \
+  "$repository_root/resources/scripts/oci-vault-secret.sh"
 if grep -Fq 'pwd(tmp: true)' "$repository_root/vars/ociTerraformPipeline.groovy"; then
   printf 'OCI Terraform credentials must use the shared Jenkins workspace.\n' >&2
   exit 1
