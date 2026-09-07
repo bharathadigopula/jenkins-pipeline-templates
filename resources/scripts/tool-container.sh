@@ -37,6 +37,10 @@ docker_arguments=(
   --workdir "$PWD"
 )
 
+if [[ -n "${TOOL_CONTAINER_HOME:-}" ]]; then
+  docker_arguments+=(--env "HOME=$TOOL_CONTAINER_HOME")
+fi
+
 while IFS='=' read -r variable_name _; do
   case "$variable_name" in
     ARM_*|AWS_*|CLOUDFLARE_*|OCI_*|TF_*)

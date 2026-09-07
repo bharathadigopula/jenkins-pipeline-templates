@@ -53,8 +53,10 @@ fi
 # OCI CONFIGURATION
 #==============================================================================
 
-private_key_file="$credential_directory/api-key.pem"
-config_file="$credential_directory/config"
+oci_config_directory="$credential_directory/.oci"
+install -d -m 0700 "$oci_config_directory"
+private_key_file="$oci_config_directory/api-key.pem"
+config_file="$oci_config_directory/config"
 jq -r '.private_key' "$TERRAFORM_CREDENTIAL_FILE" > "$private_key_file"
 chmod 0600 "$private_key_file"
 
@@ -73,6 +75,7 @@ chmod 0600 "$config_file"
 
 export CLOUDFLARE_API_TOKEN
 export OCI_CONFIG_FILE="$config_file"
+export TOOL_CONTAINER_HOME="$credential_directory"
 export TF_VAR_budget_alert_recipients
 export TF_VAR_cloudflare_account_id
 export TF_VAR_jenkins_github_token
