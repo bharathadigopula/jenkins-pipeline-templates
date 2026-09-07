@@ -20,11 +20,23 @@ def call(Map configuration = [:]) {
     // ACTION CONFIGURATION
     //==========================================================================
 
+    def targetsForAction = { String selectedAction ->
+        def targets = new groovy.json.JsonSlurperClassic().parseText(runtimeConfiguration.targetsJson)
+        targets.each { target ->
+            if (!(target.arguments instanceof List) || target.arguments.isEmpty()) {
+                error('Host configuration target arguments must include a lifecycle action')
+            }
+            target.arguments[0] = selectedAction
+        }
+        groovy.json.JsonOutput.toJson(targets)
+    }
+
     def configurationForAction = { String selectedAction ->
         def actionConfiguration = runtimeConfiguration + [
             action: selectedAction,
             prependAction: false,
-            requiredOutputMarker: "${toolType}_${selectedAction.replace('-', '_')}=ready"
+            requiredOutputMarker: "${toolType}_${selectedAction.replace('-', '_')}=ready",
+            targetsJson: targetsForAction(selectedAction)
         ]
 
         if (selectedAction != 'deploy') {
