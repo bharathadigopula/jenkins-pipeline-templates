@@ -86,6 +86,8 @@ grep -Fq 'terraformDirectories' "$repository_root/vars/repositoryValidationPipel
 grep -Fq 'validationCommands' "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq 'githubRepository' "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "libraryScript('actionlint.sh')" "$repository_root/vars/repositoryValidationPipeline.groovy"
+grep -Fq 'cleanup {' "$repository_root/vars/repositoryValidationPipeline.groovy"
+grep -Fq 'deleteDir()' "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "libraryScript('groovy-validate.sh')" "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "state: 'pending'" "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "state: 'success'" "$repository_root/vars/repositoryValidationPipeline.groovy"

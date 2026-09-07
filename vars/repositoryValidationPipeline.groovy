@@ -146,6 +146,9 @@ def call(Map configuration = [:]) {
                     }
                 }
             }
+            cleanup {
+                deleteDir()
+            }
         }
     }
 }
