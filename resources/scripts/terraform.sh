@@ -37,7 +37,7 @@ clean_terraform_cache() {
   TOOL_CONTAINER_USER=0:0 \
     TOOL_CONTAINER_ENTRYPOINT=/bin/sh \
     "$script_directory/tool-container.sh" "$terraform_image" \
-    -c 'rm -rf -- "$1"' _ "$terraform_directory/.terraform"
+    -c "rm -rf -- \"\$1\"" _ "$terraform_directory/.terraform"
 }
 
 #==============================================================================
