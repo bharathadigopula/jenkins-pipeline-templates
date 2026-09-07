@@ -12,8 +12,8 @@ def call(Map configuration = [:]) {
     def mutatingActions = configuration.mutatingActions ?: ['deploy', 'backup', 'restore', 'rollback', 'test-alert', 'test-restore']
     def runtimeConfiguration = [:]
 
-    if (!(toolType in ['jenkins', 'monitoring'])) {
-        error('toolType must be jenkins or monitoring')
+    if (!(toolType in ['backstage', 'jenkins', 'monitoring'])) {
+        error('toolType must be backstage, jenkins, or monitoring')
     }
 
     //==========================================================================
@@ -35,7 +35,9 @@ def call(Map configuration = [:]) {
         def actionConfiguration = runtimeConfiguration + [
             action: selectedAction,
             prependAction: false,
-            requiredOutputMarker: "${toolType}_${selectedAction.replace('-', '_')}=ready",
+            requiredOutputMarker: selectedAction == 'validate' && configuration.validationMarker
+                ? configuration.validationMarker
+                : "${toolType}_${selectedAction.replace('-', '_')}=ready",
             targetsJson: targetsForAction(selectedAction)
         ]
 
@@ -86,7 +88,11 @@ def call(Map configuration = [:]) {
                 steps {
                     script {
                         def outputFile = "${pwd(tmp: true)}/${toolType}-pipeline-outputs"
-                        def restoreVariable = toolType == 'jenkins' ? 'JENKINS_RESTORE_ARCHIVE' : 'MONITORING_RESTORE_ARCHIVE'
+                        def restoreVariable = [
+                            backstage: 'BACKSTAGE_RESTORE_ARCHIVE',
+                            jenkins: 'JENKINS_RESTORE_ARCHIVE',
+                            monitoring: 'MONITORING_RESTORE_ARCHIVE'
+                        ][toolType]
 
                         withEnv([
                             "GITHUB_OUTPUT=${outputFile}",
