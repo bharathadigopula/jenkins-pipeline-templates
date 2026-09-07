@@ -29,6 +29,7 @@ cat > "$temporary_directory/bin/docker" <<'EOF'
 set -euo pipefail
 printf '%s\n' "$*" >> "$OCI_TERRAFORM_TEST_CALLS"
 if [[ "$*" == *' plan '* ]]; then
+  test "$OCI_CONFIG_FILE" = "$TOOL_CONTAINER_HOME/.oci/config"
   cp "$OCI_CONFIG_FILE" "$OCI_TERRAFORM_TEST_CONFIG"
   printf '%s' "$TF_VAR_backstage_secret_bundle" > "$OCI_TERRAFORM_TEST_BACKSTAGE_SECRET"
   printf 'saved-plan\n' > "$TERRAFORM_DIRECTORY/$TERRAFORM_PLAN_FILE"
@@ -75,6 +76,8 @@ bash "$repository_root/resources/scripts/oci-terraform.sh" plan >/dev/null
 #==============================================================================
 
 grep -Fq -- '-backend-config=backend.hcl.example' "$OCI_TERRAFORM_TEST_CALLS"
+grep -Fq -- "--env HOME=$temporary_directory/workspace/.jenkins-oci." "$OCI_TERRAFORM_TEST_CALLS"
+grep -Fq -- '--env OCI_CONFIG_FILE' "$OCI_TERRAFORM_TEST_CALLS"
 grep -Fq 'tenancy=ocid1.tenancy.oc1..test' "$OCI_TERRAFORM_TEST_CONFIG"
 grep -Fq 'user=ocid1.user.oc1..test' "$OCI_TERRAFORM_TEST_CONFIG"
 test "$(cat "$OCI_TERRAFORM_TEST_BACKSTAGE_SECRET")" = '{"backend_secret":"backend"}'
