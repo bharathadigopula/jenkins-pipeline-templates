@@ -30,12 +30,23 @@ run_terraform() {
 }
 
 #==============================================================================
+# TERRAFORM CACHE CLEANUP
+#==============================================================================
+
+clean_terraform_cache() {
+  TOOL_CONTAINER_USER=0:0 \
+    TOOL_CONTAINER_ENTRYPOINT=/bin/sh \
+    "$script_directory/tool-container.sh" "$terraform_image" \
+    -c 'rm -rf -- "$1"' _ "$terraform_directory/.terraform"
+}
+
+#==============================================================================
 # TERRAFORM ACTION ROUTING
 #==============================================================================
 
 case "$action" in
   validate)
-    rm -rf -- "$terraform_directory/.terraform"
+    clean_terraform_cache
     run_terraform fmt -check -recursive
     run_terraform init -upgrade -backend=false -input=false
     run_terraform validate
