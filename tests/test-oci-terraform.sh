@@ -30,7 +30,11 @@ set -euo pipefail
 printf '%s\n' "$*" >> "$OCI_TERRAFORM_TEST_CALLS"
 if [[ "$*" == *' plan '* ]]; then
   test "$OCI_CONFIG_FILE" = "$TOOL_CONTAINER_HOME/.oci/config"
+  test -d "$TOOL_CONTAINER_HOME/.terraform.d"
   cp "$OCI_CONFIG_FILE" "$OCI_TERRAFORM_TEST_CONFIG"
+  printf '%s' "$TF_VAR_cloudflare_api_token" > "$OCI_TERRAFORM_TEST_CLOUDFLARE_TOKEN"
+  printf '%s' "$TF_VAR_oci_fingerprint" > "$OCI_TERRAFORM_TEST_FINGERPRINT"
+  printf '%s' "$TF_VAR_oci_private_key" > "$OCI_TERRAFORM_TEST_PRIVATE_KEY"
   printf '%s' "$TF_VAR_backstage_secret_bundle" > "$OCI_TERRAFORM_TEST_BACKSTAGE_SECRET"
   printf 'saved-plan\n' > "$TERRAFORM_DIRECTORY/$TERRAFORM_PLAN_FILE"
 fi
@@ -44,7 +48,10 @@ chmod +x "$temporary_directory/bin/docker"
 export HOSTNAME=jenkins-controller
 export OCI_TERRAFORM_TEST_CALLS="$temporary_directory/docker-calls"
 export OCI_TERRAFORM_TEST_BACKSTAGE_SECRET="$temporary_directory/backstage-secret"
+export OCI_TERRAFORM_TEST_CLOUDFLARE_TOKEN="$temporary_directory/cloudflare-token"
 export OCI_TERRAFORM_TEST_CONFIG="$temporary_directory/oci-config"
+export OCI_TERRAFORM_TEST_FINGERPRINT="$temporary_directory/fingerprint"
+export OCI_TERRAFORM_TEST_PRIVATE_KEY="$temporary_directory/private-key"
 export PATH="$temporary_directory/bin:$PATH"
 export TERRAFORM_BACKEND_CONFIG_FILE=backend.hcl.example
 cat > "$temporary_directory/terraform-credentials.json" <<'EOF'
@@ -81,6 +88,9 @@ grep -Fq -- '--env OCI_CONFIG_FILE' "$OCI_TERRAFORM_TEST_CALLS"
 grep -Fq 'tenancy=ocid1.tenancy.oc1..test' "$OCI_TERRAFORM_TEST_CONFIG"
 grep -Fq 'user=ocid1.user.oc1..test' "$OCI_TERRAFORM_TEST_CONFIG"
 test "$(cat "$OCI_TERRAFORM_TEST_BACKSTAGE_SECRET")" = '{"backend_secret":"backend"}'
+test "$(cat "$OCI_TERRAFORM_TEST_CLOUDFLARE_TOKEN")" = 'cloudflare-token'
+test "$(cat "$OCI_TERRAFORM_TEST_FINGERPRINT")" = 'aa:bb:cc'
+grep -Fq -- '-----BEGIN PRIVATE KEY-----' "$OCI_TERRAFORM_TEST_PRIVATE_KEY"
 
 if find "$temporary_directory/workspace" -maxdepth 1 -type d -name '.jenkins-oci.*' | grep -q .; then
   printf 'Temporary OCI credentials were not removed.\n' >&2
