@@ -35,6 +35,7 @@ run_terraform() {
 
 case "$action" in
   validate)
+    rm -rf -- "$terraform_directory/.terraform"
     run_terraform fmt -check -recursive
     run_terraform init -upgrade -backend=false -input=false
     run_terraform validate

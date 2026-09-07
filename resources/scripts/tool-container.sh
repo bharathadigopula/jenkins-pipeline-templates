@@ -33,6 +33,7 @@ fi
 
 docker_arguments=(
   --rm
+  --user "$(id -u):$(id -g)"
   --volumes-from "$jenkins_container_id"
   --workdir "$PWD"
 )
