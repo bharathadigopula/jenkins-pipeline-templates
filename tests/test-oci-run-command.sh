@@ -153,7 +153,9 @@ if [[ "$dispatch_output" != 'oci_run_command=dispatched' ]]; then
 fi
 
 if ! grep -Fq 'run --detach --rm' "$OCI_TEST_DOCKER_CALL" || \
-  ! grep -Fq -- '--network host' "$OCI_TEST_DOCKER_CALL"; then
+  ! grep -Fq -- '--network host' "$OCI_TEST_DOCKER_CALL" || \
+  ! grep -Eq -- '--env RUN_COMMAND_RESULTS_OWNER_UID=[0-9]+' "$OCI_TEST_DOCKER_CALL" || \
+  ! grep -Eq -- '--env RUN_COMMAND_RESULTS_OWNER_GID=[0-9]+' "$OCI_TEST_DOCKER_CALL"; then
   printf 'Detached OCI Run Command did not use a disposable host-networked container.\n' >&2
   exit 1
 fi

@@ -30,6 +30,8 @@ vault_secret_name="${RUN_COMMAND_VAULT_SECRET_NAME:-}"
 additional_vault_secret_name="${RUN_COMMAND_ADDITIONAL_VAULT_SECRET_NAME:-}"
 tertiary_vault_secret_name="${RUN_COMMAND_TERTIARY_VAULT_SECRET_NAME:-}"
 results_directory="${RUN_COMMAND_RESULTS_DIRECTORY:-run-command-results}"
+results_owner_uid="${RUN_COMMAND_RESULTS_OWNER_UID:-}"
+results_owner_gid="${RUN_COMMAND_RESULTS_OWNER_GID:-}"
 oci_cli_version="${OCI_CLI_VERSION:-3.91.0}"
 python_image="${OCI_CLI_PYTHON_IMAGE:-python:3.11.13-slim}"
 
@@ -132,6 +134,9 @@ if [[ "${OCI_CLI_CONTAINER_READY:-false}" != "true" ]]; then
     exit 1
   fi
 
+  results_owner_uid=$(id -u)
+  results_owner_gid=$(id -g)
+
   docker_arguments=(
     --rm
     --volumes-from "$jenkins_container_id" \
@@ -148,6 +153,8 @@ if [[ "${OCI_CLI_CONTAINER_READY:-false}" != "true" ]]; then
     --env RUN_COMMAND_PREPEND_ACTION="$prepend_action" \
     --env RUN_COMMAND_REQUIRED_OUTPUT_MARKER="$required_output_marker" \
     --env RUN_COMMAND_RESULTS_DIRECTORY="$results_directory" \
+    --env RUN_COMMAND_RESULTS_OWNER_UID="$results_owner_uid" \
+    --env RUN_COMMAND_RESULTS_OWNER_GID="$results_owner_gid" \
     --env RUN_COMMAND_SCRIPT_PATH="$script_path" \
     --env RUN_COMMAND_TARGETS="$targets_json" \
     --env RUN_COMMAND_TIMEOUT_SECONDS="$timeout_seconds" \
@@ -172,6 +179,24 @@ if [[ "${OCI_CLI_CONTAINER_READY:-false}" != "true" ]]; then
     "$python_image" \
     sh -c 'apt-get update >/dev/null && apt-get install --yes jq >/dev/null && python -m pip install --disable-pip-version-check --no-cache-dir "oci-cli==$OCI_CLI_VERSION" >/dev/null && bash "$1"' \
     _ "$0"
+fi
+
+#==============================================================================
+# RESULT OWNERSHIP
+#==============================================================================
+
+restore_result_ownership() {
+  if [[ -n "$results_owner_uid" && -n "$results_owner_gid" && -e "$results_directory" ]]; then
+    chown -R "$results_owner_uid:$results_owner_gid" "$results_directory"
+  fi
+}
+
+if [[ -n "$results_owner_uid" || -n "$results_owner_gid" ]]; then
+  if [[ ! "$results_owner_uid" =~ ^[0-9]+$ ]] || [[ ! "$results_owner_gid" =~ ^[0-9]+$ ]]; then
+    printf 'Run Command result owner must use numeric UID and GID values.\n' >&2
+    exit 1
+  fi
+  trap restore_result_ownership EXIT
 fi
 
 #==============================================================================
