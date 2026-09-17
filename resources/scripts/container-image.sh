@@ -45,7 +45,9 @@ case "$action" in
     ;;
   scan)
     jenkins_container_id="${JENKINS_CONTAINER_ID:-${HOSTNAME:-}}"
+    docker_socket_gid=$(stat --format '%g' /var/run/docker.sock)
     docker run --rm --user "$(id -u):$(id -g)" \
+      --group-add "$docker_socket_gid" \
       --volumes-from "$jenkins_container_id" \
       --volume /var/run/docker.sock:/var/run/docker.sock \
       --workdir "$PWD" \
@@ -53,6 +55,7 @@ case "$action" in
       "$trivy_image" image --exit-code 1 --ignore-unfixed \
       --scanners vuln --severity HIGH,CRITICAL "$scan_image"
     docker run --rm --user "$(id -u):$(id -g)" \
+      --group-add "$docker_socket_gid" \
       --volumes-from "$jenkins_container_id" \
       --volume /var/run/docker.sock:/var/run/docker.sock \
       --workdir "$PWD" \

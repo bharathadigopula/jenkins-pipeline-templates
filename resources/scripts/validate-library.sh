@@ -77,6 +77,8 @@ done < <(find "$repository_root/vars" "$repository_root/resources" -type f -prin
 
 grep -Fq 'TERRAFORM_APPROVED_PLAN_SHA256' "$repository_root/resources/scripts/terraform.sh"
 grep -Fq 'DEPLOY_SCRIPT is required' "$repository_root/resources/scripts/compose.sh"
+grep -Fq "docker_socket_gid=\$(stat" "$repository_root/resources/scripts/container-image.sh"
+grep -Fq -- "--group-add \"\$docker_socket_gid\"" "$repository_root/resources/scripts/container-image.sh"
 grep -Fq 'OCI_RUN_COMMAND_ACTION' "$repository_root/resources/scripts/oci-run-command.sh"
 grep -Fq 'instance-principal' "$repository_root/vars/ociRunCommand.groovy"
 grep -Fq 'RUN_COMMAND_ADDITIONAL_VAULT_SECRET_NAME' "$repository_root/resources/scripts/oci-run-command.sh"
