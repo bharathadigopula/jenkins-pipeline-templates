@@ -64,7 +64,14 @@ case "$action" in
       --output "$output_directory/sbom.cdx.json" "$scan_image"
     ;;
   publish)
-    docker buildx build --pull --platform "$platforms" \
+    builder_name="jenkins-${image_tag//[^A-Za-z0-9_.-]/-}-$$"
+    docker buildx create --name "$builder_name" --driver docker-container >/dev/null
+    cleanup_builder() {
+      docker buildx rm --force "$builder_name" >/dev/null 2>&1 || true
+    }
+    trap cleanup_builder EXIT
+    docker buildx inspect --builder "$builder_name" --bootstrap >/dev/null
+    docker buildx build --builder "$builder_name" --pull --platform "$platforms" \
       --tag "$published_image" --metadata-file "$output_directory/image-metadata.json" \
       --provenance=mode=max --sbom=true --push .
     jq -er '."containerimage.digest" | select(test("^sha256:[a-f0-9]{64}$"))' \
