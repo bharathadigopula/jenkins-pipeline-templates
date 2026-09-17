@@ -21,6 +21,8 @@ repository_root=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 #==============================================================================
 
 required_files=(
+  vars/containerImagePipeline.groovy
+  vars/kubernetesApplicationPipeline.groovy
   vars/libraryScript.groovy
   vars/terraformPipeline.groovy
   vars/ociTerraformPipeline.groovy
@@ -38,6 +40,7 @@ required_files=(
   vars/backupPipeline.groovy
   vars/githubStatus.groovy
   resources/scripts/tool-container.sh
+  resources/scripts/container-image.sh
   resources/scripts/terraform.sh
   resources/scripts/oci-terraform.sh
   resources/scripts/oci-vault-secret.sh
@@ -114,6 +117,8 @@ fi
 
 pipeline_files=(
   backupPipeline.groovy
+  containerImagePipeline.groovy
+  kubernetesApplicationPipeline.groovy
   composePipeline.groovy
   hostConfigDeploymentPipeline.groovy
   hostConfigIngressPipeline.groovy
