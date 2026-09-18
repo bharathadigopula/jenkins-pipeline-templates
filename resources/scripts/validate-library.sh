@@ -107,6 +107,10 @@ grep -Fq "state: 'success'" "$repository_root/vars/repositoryValidationPipeline.
 grep -Fq "state: 'failure'" "$repository_root/vars/repositoryValidationPipeline.groovy"
 grep -Fq "def credentialFile = \"\${pwd()}/.terraform-credentials.json\"" \
   "$repository_root/vars/ociTerraformPipeline.groovy"
+grep -Fq "name: 'WORDPRESS_REGISTRY_TOKEN'" \
+  "$repository_root/vars/ociTerraformPipeline.groovy"
+grep -Fq "libraryScript('terraform-credential-bootstrap.sh')" \
+  "$repository_root/vars/ociTerraformPipeline.groovy"
 grep -Fq 'OCI_VAULT_CREDENTIAL_OWNER_UID' \
   "$repository_root/resources/scripts/oci-vault-secret.sh"
 grep -Fq 'OCI_VAULT_CREDENTIAL_OWNER_GID' \

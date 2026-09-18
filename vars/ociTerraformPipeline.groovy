@@ -34,6 +34,11 @@ def call(Map configuration = [:]) {
                 choices: ['validate', 'plan', 'apply'],
                 description: 'Terraform lifecycle action'
             )
+            password(
+                name: 'WORDPRESS_REGISTRY_TOKEN',
+                defaultValue: '',
+                description: 'One-time GHCR token bootstrap; leave empty after it is persisted in OCI Vault'
+            )
         }
 
         //======================================================================
@@ -80,6 +85,7 @@ def call(Map configuration = [:]) {
                                 "TERRAFORM_DIRECTORY=${params.ROOT}"
                             ]) {
                                 libraryScript('oci-vault-secret.sh')
+                                libraryScript('terraform-credential-bootstrap.sh')
                                 libraryScript('oci-terraform.sh', 'plan')
                             }
                         } finally {
@@ -121,6 +127,7 @@ def call(Map configuration = [:]) {
                                 "TERRAFORM_DIRECTORY=${params.ROOT}"
                             ]) {
                                 libraryScript('oci-vault-secret.sh')
+                                libraryScript('terraform-credential-bootstrap.sh')
                                 libraryScript('oci-terraform.sh', 'apply')
                             }
                         } finally {

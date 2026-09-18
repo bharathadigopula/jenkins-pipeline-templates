@@ -88,6 +88,7 @@ export TF_VAR_oci_user_ocid
 export TF_VAR_ssh_allowed_cidr
 export TF_VAR_ssh_public_key
 export TF_VAR_tenancy_ocid
+export TF_VAR_wordpress_registry_token
 
 if jq -e '.backstage_secret_bundle | type == "string"' "$TERRAFORM_CREDENTIAL_FILE" >/dev/null; then
   export TF_VAR_backstage_secret_bundle
@@ -106,6 +107,7 @@ TF_VAR_oci_user_ocid=$(jq -r '.user_ocid' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_ssh_allowed_cidr=$(jq -r '.ssh_allowed_cidr' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_ssh_public_key=$(jq -r '.ssh_public_key' "$TERRAFORM_CREDENTIAL_FILE")
 TF_VAR_tenancy_ocid=$(jq -r '.tenancy_ocid' "$TERRAFORM_CREDENTIAL_FILE")
+TF_VAR_wordpress_registry_token=$(jq -r '.wordpress_registry_token // empty' "$TERRAFORM_CREDENTIAL_FILE")
 
 #==============================================================================
 # TERRAFORM EXECUTION
