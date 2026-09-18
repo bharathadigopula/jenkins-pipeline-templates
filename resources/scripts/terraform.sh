@@ -40,12 +40,19 @@ clean_terraform_cache() {
     -c "rm -rf -- \"\$1\"" _ "$terraform_directory/.terraform"
 }
 
+clean_terraform_validation() {
+  local exit_code=$?
+  clean_terraform_cache || true
+  exit "$exit_code"
+}
+
 #==============================================================================
 # TERRAFORM ACTION ROUTING
 #==============================================================================
 
 case "$action" in
   validate)
+    trap clean_terraform_validation EXIT
     clean_terraform_cache
     run_terraform fmt -check -recursive
     run_terraform init -upgrade -backend=false -input=false
