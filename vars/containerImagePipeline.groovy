@@ -91,7 +91,7 @@ def call(Map configuration = [:]) {
                 steps {
                     script {
                         def imageDigest = readFile('build/image-digest').trim()
-                        build job: configuration.deploymentJob, wait: true, parameters: [
+                        build job: configuration.deploymentJob, wait: false, parameters: [
                             string(name: 'ACTION', value: 'deploy'),
                             string(name: 'IMAGE_DIGEST', value: imageDigest),
                             string(name: 'IMAGE_TAG', value: runtimeConfiguration.imageTag)

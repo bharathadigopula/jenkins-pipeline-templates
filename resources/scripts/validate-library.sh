@@ -82,6 +82,7 @@ grep -Fq -- "--group-add \"\$docker_socket_gid\"" "$repository_root/resources/sc
 grep -Fq -- '--driver docker-container' "$repository_root/resources/scripts/container-image.sh"
 grep -Fq -- '--provenance=mode=max --sbom=true --push' "$repository_root/resources/scripts/container-image.sh"
 grep -Fq 'trap cleanup_builder EXIT' "$repository_root/resources/scripts/container-image.sh"
+grep -Fq 'build job: configuration.deploymentJob, wait: false' "$repository_root/vars/containerImagePipeline.groovy"
 grep -Fq 'OCI_RUN_COMMAND_ACTION' "$repository_root/resources/scripts/oci-run-command.sh"
 grep -Fq 'instance-principal' "$repository_root/vars/ociRunCommand.groovy"
 grep -Fq 'RUN_COMMAND_ADDITIONAL_VAULT_SECRET_NAME' "$repository_root/resources/scripts/oci-run-command.sh"
