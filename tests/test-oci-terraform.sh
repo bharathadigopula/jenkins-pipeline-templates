@@ -40,6 +40,7 @@ if [[ "$*" == *' plan '* ]]; then
   printf '%s' "$TF_VAR_oci_private_key" > "$OCI_TERRAFORM_TEST_PRIVATE_KEY"
   printf '%s' "$TF_VAR_backstage_secret_bundle" > "$OCI_TERRAFORM_TEST_BACKSTAGE_SECRET"
   printf '%s' "$TF_VAR_wordpress_registry_token" > "$OCI_TERRAFORM_TEST_REGISTRY_TOKEN"
+  printf '%s' "$TF_VAR_clinirova_secret_bundle" > "$OCI_TERRAFORM_TEST_CLINIROVA_SECRET"
   printf 'saved-plan\n' > "$TERRAFORM_DIRECTORY/$TERRAFORM_PLAN_FILE"
 fi
 EOF
@@ -57,6 +58,7 @@ export OCI_TERRAFORM_TEST_CONFIG="$temporary_directory/oci-config"
 export OCI_TERRAFORM_TEST_FINGERPRINT="$temporary_directory/fingerprint"
 export OCI_TERRAFORM_TEST_PRIVATE_KEY="$temporary_directory/private-key"
 export OCI_TERRAFORM_TEST_REGISTRY_TOKEN="$temporary_directory/registry-token"
+export OCI_TERRAFORM_TEST_CLINIROVA_SECRET="$temporary_directory/clinirova-secret"
 export PATH="$temporary_directory/bin:$PATH"
 export TERRAFORM_BACKEND_CONFIG_FILE=backend.hcl.example
 cat > "$temporary_directory/terraform-credentials.json" <<'EOF'
@@ -78,6 +80,7 @@ EOF
 chmod 0600 "$temporary_directory/terraform-credentials.json"
 export TERRAFORM_CREDENTIAL_FILE="$temporary_directory/terraform-credentials.json"
 export WORDPRESS_REGISTRY_TOKEN=registry-token-at-least-twenty
+export CLINIROVA_SECRET_BUNDLE='{"SMTP_PASSWORD":"synthetic-password"}'
 export TERRAFORM_DIRECTORY=root
 export TERRAFORM_PLAN_FILE=terraform.tfplan
 
@@ -105,6 +108,7 @@ test "$(cat "$OCI_TERRAFORM_TEST_BACKSTAGE_SECRET")" = '{"backend_secret":"backe
 test "$(cat "$OCI_TERRAFORM_TEST_CLOUDFLARE_TOKEN")" = 'cloudflare-token'
 test "$(cat "$OCI_TERRAFORM_TEST_FINGERPRINT")" = 'aa:bb:cc'
 test "$(cat "$OCI_TERRAFORM_TEST_REGISTRY_TOKEN")" = 'registry-token-at-least-twenty'
+jq -e '.SMTP_PASSWORD == "synthetic-password"' "$OCI_TERRAFORM_TEST_CLINIROVA_SECRET" >/dev/null
 grep -Fq -- '-----BEGIN PRIVATE KEY-----' "$OCI_TERRAFORM_TEST_PRIVATE_KEY"
 
 if find "$temporary_directory/workspace" -maxdepth 1 -type d -name '.jenkins-oci.*' | grep -q .; then

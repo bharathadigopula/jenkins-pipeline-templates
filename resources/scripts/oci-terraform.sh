@@ -90,6 +90,11 @@ export TF_VAR_ssh_public_key
 export TF_VAR_tenancy_ocid
 export TF_VAR_wordpress_registry_token
 
+if jq -e '.clinirova_secret_bundle | type == "string"' "$TERRAFORM_CREDENTIAL_FILE" >/dev/null; then
+  export TF_VAR_clinirova_secret_bundle
+  TF_VAR_clinirova_secret_bundle=$(jq -r '.clinirova_secret_bundle' "$TERRAFORM_CREDENTIAL_FILE")
+fi
+
 if jq -e '.backstage_secret_bundle | type == "string"' "$TERRAFORM_CREDENTIAL_FILE" >/dev/null; then
   export TF_VAR_backstage_secret_bundle
   TF_VAR_backstage_secret_bundle=$(jq -r '.backstage_secret_bundle' "$TERRAFORM_CREDENTIAL_FILE")
