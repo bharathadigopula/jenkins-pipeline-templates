@@ -46,8 +46,9 @@ def call(Map configuration = [:]) {
                         if (configuration.repairWorkspaceOwnership ?: false) {
                             libraryScript('workspace-permissions.sh')
                         }
+                        def checkoutResult = checkout scm
+                        env.GIT_COMMIT = checkoutResult.GIT_COMMIT
                     }
-                    checkout scm
                 }
             }
 
