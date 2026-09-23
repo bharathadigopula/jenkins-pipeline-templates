@@ -20,6 +20,7 @@ def call(Map configuration = [:]) {
         options {
             ansiColor('xterm')
             disableConcurrentBuilds()
+            skipDefaultCheckout()
             timeout(time: configuration.timeoutMinutes ?: 20, unit: 'MINUTES')
             buildDiscarder(logRotator(numToKeepStr: configuration.buildRetention ?: '20'))
         }
@@ -41,6 +42,11 @@ def call(Map configuration = [:]) {
         stages {
             stage('Checkout') {
                 steps {
+                    script {
+                        if (configuration.repairWorkspaceOwnership ?: false) {
+                            libraryScript('workspace-permissions.sh')
+                        }
+                    }
                     checkout scm
                 }
             }

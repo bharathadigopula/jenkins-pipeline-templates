@@ -169,7 +169,7 @@ if [[ "${OCI_CLI_CONTAINER_READY:-false}" != "true" ]]; then
   if [[ "$detached" == "true" ]]; then
     docker run --detach "${docker_arguments[@]}" \
       "$python_image" \
-      sh -c 'apt-get update >/dev/null && apt-get install --yes jq >/dev/null && python -m pip install --disable-pip-version-check --no-cache-dir "oci-cli==$OCI_CLI_VERSION" >/dev/null && bash "$1"' \
+      sh -c 'apt-get update >/dev/null && apt-get install --yes jq >/dev/null && python -m pip install --disable-pip-version-check --no-cache-dir --timeout 120 --retries 5 "oci-cli==$OCI_CLI_VERSION" >/dev/null && bash "$1"' \
       _ "$0" >/dev/null
     printf 'oci_run_command=dispatched\n'
     exit 0
@@ -177,7 +177,7 @@ if [[ "${OCI_CLI_CONTAINER_READY:-false}" != "true" ]]; then
 
   exec docker run "${docker_arguments[@]}" \
     "$python_image" \
-    sh -c 'apt-get update >/dev/null && apt-get install --yes jq >/dev/null && python -m pip install --disable-pip-version-check --no-cache-dir "oci-cli==$OCI_CLI_VERSION" >/dev/null && bash "$1"' \
+    sh -c 'apt-get update >/dev/null && apt-get install --yes jq >/dev/null && python -m pip install --disable-pip-version-check --no-cache-dir --timeout 120 --retries 5 "oci-cli==$OCI_CLI_VERSION" >/dev/null && bash "$1"' \
     _ "$0"
 fi
 
