@@ -18,6 +18,7 @@ trivy_image="${TRIVY_IMAGE:-aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa
 scan_image="${image_repository}:${image_tag}-scan"
 published_image="${image_repository}:${image_tag}"
 output_directory="${CONTAINER_OUTPUT_DIRECTORY:-build}"
+build_target="${CONTAINER_BUILD_TARGET:-}"
 
 #==============================================================================
 # INPUT VALIDATION
@@ -32,6 +33,15 @@ fi
 
 mkdir -p "$output_directory"
 
+build_arguments=(--pull)
+if [[ -n "$build_target" ]]; then
+  if [[ ! "$build_target" =~ ^[A-Za-z0-9][A-Za-z0-9_.-]*$ ]]; then
+    printf 'Invalid container build target.\n' >&2
+    exit 2
+  fi
+  build_arguments+=(--target "$build_target")
+fi
+
 #==============================================================================
 # IMAGE LIFECYCLE
 #==============================================================================
@@ -41,7 +51,7 @@ case "$action" in
     docker buildx version >/dev/null
     ;;
   build)
-    docker build --pull --tag "$scan_image" .
+    docker build "${build_arguments[@]}" --tag "$scan_image" .
     ;;
   scan)
     jenkins_container_id="${JENKINS_CONTAINER_ID:-${HOSTNAME:-}}"
@@ -71,7 +81,7 @@ case "$action" in
     }
     trap cleanup_builder EXIT
     docker buildx inspect --builder "$builder_name" --bootstrap >/dev/null
-    docker buildx build --builder "$builder_name" --pull --platform "$platforms" \
+    docker buildx build --builder "$builder_name" "${build_arguments[@]}" --platform "$platforms" \
       --tag "$published_image" --metadata-file "$output_directory/image-metadata.json" \
       --provenance=mode=max --sbom=true --push .
     jq -er '."containerimage.digest" | select(test("^sha256:[a-f0-9]{64}$"))' \

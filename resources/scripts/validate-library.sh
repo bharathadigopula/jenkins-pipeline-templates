@@ -153,6 +153,7 @@ done
 bash "$repository_root/tests/test-oci-run-command.sh"
 bash "$repository_root/tests/test-oci-terraform.sh"
 bash "$repository_root/tests/test-clinirova-credential-bootstrap.sh"
+bash "$repository_root/tests/test-container-image-target.sh"
 bash "$repository_root/tests/test-oci-vault-secret.sh"
 
 #==============================================================================

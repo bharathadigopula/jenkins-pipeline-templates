@@ -22,6 +22,7 @@ def call(Map configuration = [:]) {
         environment {
             CONTAINER_IMAGE_PLATFORMS = "${configuration.platforms ?: 'linux/amd64,linux/arm64'}"
             CONTAINER_IMAGE_REPOSITORY = "${configuration.imageRepository ?: ''}"
+            CONTAINER_BUILD_TARGET = "${configuration.buildTarget ?: ''}"
             CONTAINER_OUTPUT_DIRECTORY = 'build'
             TRIVY_IMAGE = "${configuration.trivyImage ?: 'aquasec/trivy:0.74.0@sha256:62b1e65e8869bc4b4c6aa4fa2b21595256c7c2f6018a9d9ad61caf87187c1969'}"
         }
