@@ -32,7 +32,7 @@ def call(Map configuration = [:]) {
             "OCI_RUN_COMMAND_COMPARTMENT_OCID=${configuration.compartmentOcid ?: ''}",
             "OCI_RUN_COMMAND_REGION=${configuration.region ?: ''}",
             "RUN_COMMAND_SCRIPT_PATH=${configuration.scriptPath ?: ''}",
-            "RUN_COMMAND_TARGETS=${configuration.targetsJson ?: '[]'}",
+            "RUN_COMMAND_TARGETS=${configuration.targetsJson ?: groovy.json.JsonOutput.toJson(configuration.targets ?: [])}",
             "RUN_COMMAND_DISPLAY_NAME=${configuration.displayName ?: 'jenkins-run-command'}",
             "RUN_COMMAND_DETACHED=${configuration.detached ?: false}",
             "RUN_COMMAND_PREPEND_ACTION=${configuration.prependAction != false}",
