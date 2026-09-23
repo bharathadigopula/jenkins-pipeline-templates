@@ -39,6 +39,11 @@ def call(Map configuration = [:]) {
                 defaultValue: '',
                 description: 'One-time GHCR token bootstrap; leave empty after it is persisted in OCI Vault'
             )
+            password(
+                name: 'CLINIROVA_SECRET_BUNDLE',
+                defaultValue: '',
+                description: 'One-time Clinirova JSON credential bundle; leave empty after persistence in OCI Vault'
+            )
         }
 
         //======================================================================
